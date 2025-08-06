@@ -175,6 +175,41 @@ func Translate(dstDS string, sourceDS Dataset, options []string) (Dataset, error
 
 }
 
+func ConvertTile(inputPath, outputPath string, options []string) error {
+	cInput := C.CString(inputPath)
+	cOutput := C.CString(outputPath)
+	defer C.free(unsafe.Pointer(cInput))
+	defer C.free(unsafe.Pointer(cOutput))
+
+	length := len(options)
+	opts := make([]*C.char, length+1)
+	for i := 0; i < length; i++ {
+		opts[i] = C.CString(options[i])
+		defer C.free(unsafe.Pointer(opts[i]))
+	}
+	opts[length] = (*C.char)(unsafe.Pointer(nil))
+	translateopts := C.GDALTranslateOptionsNew(
+		(**C.char)(unsafe.Pointer(&opts[0])),
+		(*C.GDALTranslateOptionsForBinary)(unsafe.Pointer(nil)))
+	defer C.GDALTranslateOptionsFree(translateopts)
+
+	var cerr C.int
+
+	dataset := C.GDALTranslate(
+		cOutput,
+		C.GDALOpen(cInput, C.GA_ReadOnly),
+		translateopts, &cerr,
+	)
+	if dataset == nil {
+		return fmt.Errorf("GDALTranslate failed")
+	}
+	if cerr != 0 {
+		return fmt.Errorf("GDALTranslate failed")
+	}
+	C.GDALClose(dataset)
+	return nil
+}
+
 func VectorTranslate(dstDS string, sourceDS []Dataset, options []string) (Dataset, error) {
 	if dstDS == "" {
 		dstDS = "MEM:::"
