@@ -50,6 +50,11 @@ func Info(sourceDS Dataset, options []string) string {
 
 }
 
+
+func Init() {
+	C.GDALAllRegister()
+}
+
 func BuildVRT(dstDS string, sourceDS []Dataset, srcDSFilePath, options []string) (Dataset, error) {
 	if dstDS == "" {
 		dstDS = "MEM:::"
@@ -211,6 +216,7 @@ func ConvertTile(inputPath, outputPath string, options []string) error {
 		return fmt.Errorf("GDALTranslate failed")
 	}
 	C.GDALClose(dataset)
+	C.GDALFlushCacheBlock()
 	return nil
 }
 
