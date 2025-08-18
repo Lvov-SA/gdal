@@ -195,11 +195,15 @@ func ConvertTile(inputPath, outputPath string, options []string) error {
 
 	var cerr C.int
 
+	suorceDataSet := C.GDALOpen(cInput, C.GA_ReadOnly)
+
 	dataset := C.GDALTranslate(
 		cOutput,
-		C.GDALOpen(cInput, C.GA_ReadOnly),
+		suorceDataSet,
 		translateopts, &cerr,
 	)
+
+	C.GDALClose(suorceDataSet)
 	if dataset == nil {
 		return fmt.Errorf("GDALTranslate failed")
 	}
