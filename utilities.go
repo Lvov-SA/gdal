@@ -216,7 +216,6 @@ func ConvertTile(inputPath, outputPath string, options []string) error {
 		return fmt.Errorf("GDALTranslate failed")
 	}
 	C.GDALClose(dataset)
-	C.GDALFlushCacheBlock()
 	return nil
 }
 
